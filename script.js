@@ -4,6 +4,7 @@ var config = {
     width: 800,
     height: 600,
     scene: {
+        preload: preload,
         create: create,
         update: update
     },
@@ -16,6 +17,7 @@ var config = {
     }
 }
 
+
 var game = new Phaser.Game(config);
 var ball;
 var paddle;
@@ -24,21 +26,24 @@ var score = 0;
 var livesText;
 var scoreText;
 var brickInfo = {
-    width: 50,
-    height: 20,
+    width: 4,
+    height: 4,
     count: {
-        row: 4,
-        col: 12
+        row: 26,
+        col: 73
     },
     offset: {
         top: 90,
-        left: 60
+        left: 5
     },
-    padding: 10,
+    padding: 7,
 }
 var scene;
-var randomBricks = getRandomInt(0, brickInfo.count.row * brickInfo.count.col, 10);
-console.log(randomBricks);
+
+function preload() {
+this.load.video('bara', 'barabere.mp4');
+this.load.image('pl','PNG_transparency_demonstration_1.png');
+}
 
 function getRandomInt(min, max, noOfNumbers) {
 
@@ -53,12 +58,15 @@ function getRandomInt(min, max, noOfNumbers) {
     return numbers
 }
 
+var imigi;
 function create() {
 
     scene = this;
-
+    var video = this.add.video(300,100, 'bara');
+    video.play();
+    var s = this.add.sprite(300,100,'pl');
     paddle = scene.add.rectangle(400, 570, 140, 10, 0xFFFFFF);
-    ball = scene.add.circle(400, 300, 10, 0xFFFFFF);
+    ball = scene.add.circle(400, 500, 5, 0xFFFFFF);
     lava = scene.add.rectangle(0, 600, 200000, 10, 0xFF0000);
     scoreText = scene.add.text(16, 16, 'Score: ' + score, { fontSize: '32px', fill: '#FFFFFF' });
     livesText = scene.add.text(600, 16, 'Lives: ' + lives, { fontSize: '32px', fill: '#FFFFFF' });
@@ -90,10 +98,10 @@ function create() {
 
 function update() {
     if (lives === 0) {
-        location.reload();
+       // location.reload();
     }
     if (score === brickInfo.count.row * brickInfo.count.col) {
-        location.reload();
+       // location.reload();
     }
 }
 
@@ -108,8 +116,9 @@ function createBricks() {
             var brickX = (c * (brickInfo.width + brickInfo.padding)) + brickInfo.offset.left;
             var brickY = (r * (brickInfo.height + brickInfo.padding)) + brickInfo.offset.top;
             let brickIdx = r * 10 + c;
-            let brickColor =  0xFF0000;
 
+            let brickColor =  0xFF0000;
+            var randomBricks = getRandomInt(0, brickInfo.count.row * brickInfo.count.col, 700);
             if (randomBricks.includes(brickIdx)) {
                 brickColor = 0x00FF00;
             }
