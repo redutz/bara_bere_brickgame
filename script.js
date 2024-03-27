@@ -1,29 +1,31 @@
-var config = {
+const config = {
     type: Phaser.AUTO,
     parent: 'game',
     width: 800,
     height: 600,
     scene: {
-        create: create,
-        update: update
+        create,
+        update
     },
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 0},
+            gravity: { y: 0 },
             debug: false
         }
     }
-}
+};
 
-var game = new Phaser.Game(config);
-var ball;
-var paddle;
-var lives = 3;
-var score = 0;
-var livesText;
-var scoreText;
-var brickInfo = {
+const game = new Phaser.Game(config);
+
+let ball;
+let paddle;
+let lives = 3;
+let score = 0;
+let livesText;
+let scoreText;
+
+const brickInfo = {
     width: 50,
     height: 20,
     count: {
@@ -35,31 +37,31 @@ var brickInfo = {
         left: 60
     },
     padding: 10,
-}
-var scene;
-var randomBricks = getRandomInt(0, brickInfo.count.row * brickInfo.count.col, 10);
+};
+
+let scene;
+
+const randomBricks = getRandomInt(0, brickInfo.count.row * brickInfo.count.col - 1, 10);
 console.log(randomBricks);
 
 function getRandomInt(min, max, noOfNumbers) {
-
     min = Math.ceil(min);
     max = Math.floor(max);
-    let numbers = [];
+    const numbers = [];
 
-    for (var i = 0; i < noOfNumbers; i++) {
+    for (let i = 0; i < noOfNumbers; i++) {
         numbers.push(Math.floor(Math.random() * (max - min + 1)) + min);
     }
 
-    return numbers
+    return numbers;
 }
 
 function create() {
-
     scene = this;
 
     paddle = scene.add.rectangle(400, 570, 140, 10, 0xFFFFFF);
     ball = scene.add.circle(400, 300, 10, 0xFFFFFF);
-    lava = scene.add.rectangle(0, 600, 200000, 10, 0xFF0000);
+    const lava = scene.add.rectangle(0, 600, 200000, 10, 0xFF0000);
     scoreText = scene.add.text(16, 16, 'Score: ' + score, { fontSize: '32px', fill: '#FFFFFF' });
     livesText = scene.add.text(600, 16, 'Lives: ' + lives, { fontSize: '32px', fill: '#FFFFFF' });
 
@@ -67,64 +69,48 @@ function create() {
     scene.physics.add.existing(paddle);
     scene.physics.add.existing(lava);
 
-    ball.body.velocity.x = 250;
-    ball.body.velocity.y = 250;
-    ball.body.collideWorldBounds = true;
-    ball.body.bounce.y = 1;
-    ball.body.bounce.x = 1;
+    ball.body.setVelocity(250, 250);
+    ball.body.setCollideWorldBounds(true);
+    ball.body.setBounce(1, 1);
 
-    paddle.body.immovable = true;
+    paddle.body.setImmovable(true);
+    lava.body.setImmovable(true);
 
-    lava.body.immovable = true;
-
-    scene.physics.add.collider(paddle, ball, bounceOfPaddle);
-
-    createBricks();
-
+    scene.physics.add.collider(paddle, ball, bounceOffPaddle);
     scene.physics.add.collider(ball, lava, hitLava);
 
-    scene.input.on('pointermove', function (pointer) {
-        paddle.setPosition(pointer.x, paddle.y);
-    });
+    scene.input.on('pointermove', pointer => paddle.setPosition(pointer.x, paddle.y));
+
+    createBricks();
 }
 
 function update() {
-    if (lives === 0) {
-        location.reload();
-    }
-    if (score === brickInfo.count.row * brickInfo.count.col) {
+    if (lives === 0 || score === brickInfo.count.row * brickInfo.count.col) {
         location.reload();
     }
 }
 
-function bounceOfPaddle() {
-    ball.body.velocity.x = -1 * 5 * (paddle.x - ball.x);
+function bounceOffPaddle() {
+    ball.body.velocity.x = -5 * (paddle.x - ball.x);
 }
 
 function createBricks() {
-    for (c = 0; c < brickInfo.count.col; c++) {
-        for (r = 0; r < brickInfo.count.row; r++) {
+    for (let c = 0; c < brickInfo.count.col; c++) {
+        for (let r = 0; r < brickInfo.count.row; r++) {
+            const brickX = (c * (brickInfo.width + brickInfo.padding)) + brickInfo.offset.left;
+            const brickY = (r * (brickInfo.height + brickInfo.padding)) + brickInfo.offset.top;
+            const brickIdx = r * brickInfo.count.col + c;
+            const brickColor = randomBricks.includes(brickIdx) ? 0x00FF00 : 0xFF0000;
 
-            var brickX = (c * (brickInfo.width + brickInfo.padding)) + brickInfo.offset.left;
-            var brickY = (r * (brickInfo.height + brickInfo.padding)) + brickInfo.offset.top;
-            let brickIdx = r * 10 + c;
-            let brickColor =  0xFF0000;
-
-            if (randomBricks.includes(brickIdx)) {
-                brickColor = 0x00FF00;
-            }
-
-            brickHandler(scene.physics.add.existing(scene.add.rectangle(brickX, brickY, brickInfo.width, brickInfo.height, brickColor)));
-
+            const brick = scene.physics.add.existing(scene.add.rectangle(brickX, brickY, brickInfo.width, brickInfo.height, brickColor));
+            brickHandler(brick);
         }
     }
 }
 
 function brickHandler(brick) { 
-    brick.body.immovable = true;
-    scene.physics.add.collider(ball, brick, function () {
-        ballHitBrick(brick);
-    });
+    brick.body.setImmovable(true);
+    scene.physics.add.collider(ball, brick, () => ballHitBrick(brick));
 }
 
 function ballHitBrick(brick) {
@@ -134,7 +120,7 @@ function ballHitBrick(brick) {
 }
 
 function hitLava() {
-    console.log('lava was hit');
+    console.log('Lava was hit');
     lives--;
     livesText.setText("Lives: " + lives);
 }
